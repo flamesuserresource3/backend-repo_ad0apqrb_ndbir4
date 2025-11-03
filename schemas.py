@@ -11,10 +11,10 @@ Model name is converted to lowercase for the collection name:
 - BlogPost -> "blogs" collection
 """
 
-from pydantic import BaseModel, Field
-from typing import Optional
+from pydantic import BaseModel, Field, HttpUrl
+from typing import Optional, Dict, Any
 
-# Example schemas (replace with your own):
+# Example schemas (you can keep these as samples):
 
 class User(BaseModel):
     """
@@ -38,11 +38,20 @@ class Product(BaseModel):
     category: str = Field(..., description="Product category")
     in_stock: bool = Field(True, description="Whether product is in stock")
 
-# Add your own schemas here:
-# --------------------------------------------------
+# Agent Evaluator schemas
 
-# Note: The Flames database viewer will automatically:
-# 1. Read these schemas from GET /schema endpoint
-# 2. Use them for document validation when creating/editing
-# 3. Handle all database operations (CRUD) directly
-# 4. You don't need to create any database endpoints!
+class EvaluationRequest(BaseModel):
+    agent_card_url: HttpUrl = Field(..., description="URL to the agent card JSON or YAML")
+    chat_url: Optional[HttpUrl] = Field(None, description="Optional URL to chat logs")
+
+class Evaluation(BaseModel):
+    """
+    Evaluation documents
+    Collection name: "evaluation"
+    """
+    agent_card_url: str
+    chat_url: Optional[str] = None
+    status: str = Field("queued", description="queued|running|completed|failed")
+    metrics: Optional[Dict[str, Any]] = Field(None, description="Structured JSON metrics output")
+    html_report: Optional[str] = Field(None, description="Pre-rendered HTML report")
+    error: Optional[str] = Field(None, description="Error message if failed")
